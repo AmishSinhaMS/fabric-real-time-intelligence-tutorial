@@ -65,8 +65,8 @@ This solution demonstrates the full Real-Time Intelligence stack: **Eventhouse**
 | **KQL Silver:** TransformedData table (update policy active) | ✅ Created + auto-populated |
 | **KQL Gold:** AggregatedData materialized view | ✅ Created + auto-populated |
 | **KQL Function:** TransformRawData() | ✅ Created |
-| **Eventstream:** TutorialEventstream | ✅ Created (needs source config in portal) |
-| **Dashboard:** TutorialDashboard | ✅ Created (needs tile config in portal) |
+| **Eventstream:** TutorialEventstream | ✅ Configured (CustomEndpoint → Eventhouse) |
+| **Dashboard:** TutorialDashboard | ✅ Configured (4 KQL queries, 30s auto-refresh) |
 
 ### Steps to Complete in Fabric Portal
 
@@ -186,3 +186,4 @@ fabric-real-time-intelligence-tutorial/
 ---
 
 > 📝 **Workspace:** Real-Time Intelligence Tutorial | **Data:** Bicycle Rentals (streaming) | **Last updated:** April 2026
+
