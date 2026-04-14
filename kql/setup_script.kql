@@ -1,0 +1,70 @@
+// ============================================================
+// KQL Setup Script — Real-Time Intelligence Tutorial
+// Creates Bronze/Silver/Gold tables, function, update policy,
+// and materialized view in the Tutorial KQL database.
+//
+// Run this in the KQL queryset (Tutorial_queryset) or via
+// the Fabric REST API against the Tutorial KQL database.
+// ============================================================
+
+.execute database script with (ContinueOnErrors=false)
+<|
+//
+// ── BRONZE LAYER ──────────────────────────────────────────
+// Create raw data table for incoming bike point events
+.create table RawData (
+    BikepointID: string,
+    Street: string,
+    Neighbourhood: string,
+    Latitude: dynamic,
+    Longitude: dynamic,
+    No_Bikes: long,
+    No_Empty_Docks: long,
+    Timestamp: datetime
+) with (folder="Bronze")
+//
+// ── SILVER LAYER ──────────────────────────────────────────
+// Create transformed data table with parsed fields
+.create table TransformedData (
+    BikepointID: int,
+    Street: string,
+    Neighbourhood: string,
+    Latitude: dynamic,
+    Longitude: dynamic,
+    No_Bikes: long,
+    No_Empty_Docks: long,
+    Timestamp: datetime,
+    BikesToBeFilled: long,
+    Action: string
+) with (folder="Silver")
+//
+// Create function with transformation logic:
+// - Parse BikepointID from "BikePoints_123" to integer 123
+// - Calculate BikesToBeFilled = empty docks - current bikes
+// - Set Action: number of bikes needed or "NA" if full
+.create-or-alter function TransformRawData() {
+    RawData
+    | parse BikepointID with * "BikePoints_" BikepointID:int
+    | extend BikesToBeFilled = No_Empty_Docks - No_Bikes
+    | extend Action = iff(BikesToBeFilled > 0, tostring(BikesToBeFilled), "NA")
+}
+//
+// Apply update policy: automatically transform data when new
+// rows arrive in RawData → TransformedData
+.alter table TransformedData policy update
+```[{
+    "IsEnabled": true,
+    "Source": "RawData",
+    "Query": "TransformRawData()",
+    "IsTransactional": false,
+    "PropagateIngestionProperties": false
+}]```
+//
+// ── GOLD LAYER ────────────────────────────────────────────
+// Create materialized view for real-time aggregation:
+// Latest bike count per station (always up-to-date)
+.create-or-alter materialized-view with (folder="Gold") AggregatedData on table TransformedData
+{
+    TransformedData
+    | summarize arg_max(Timestamp, No_Bikes) by BikepointID
+}

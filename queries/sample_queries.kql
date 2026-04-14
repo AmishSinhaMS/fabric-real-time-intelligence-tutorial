@@ -1,0 +1,49 @@
+// ============================================================
+// Sample KQL Queries — Real-Time Intelligence Tutorial
+// Run these in the Tutorial_queryset after data is flowing
+// ============================================================
+
+// ── Query 1: Time chart of bikes in Chelsea ──────────────
+// Shows bike availability over time for a specific neighbourhood
+TransformedData
+| where BikepointID > 100 and Neighbourhood == "Chelsea"
+| project Timestamp, No_Bikes
+| render timechart
+
+// ── Query 2: Column chart of bikes by station ────────────
+// Uses the materialized view for latest data per station
+AggregatedData
+| sort by BikepointID
+| render columnchart with (ycolumns=No_Bikes, xcolumn=BikepointID)
+
+// ── Query 3: Stations that need bike replenishment ───────
+TransformedData
+| where Action != "NA"
+| summarize arg_max(Timestamp, *) by BikepointID
+| project BikepointID, Street, Neighbourhood, No_Bikes, No_Empty_Docks, BikesToBeFilled, Timestamp
+| order by BikesToBeFilled desc
+| take 20
+
+// ── Query 4: Average bikes per neighbourhood ─────────────
+TransformedData
+| where Timestamp > ago(1h)
+| summarize AvgBikes = avg(No_Bikes), AvgEmptyDocks = avg(No_Empty_Docks) by Neighbourhood
+| order by AvgBikes desc
+
+// ── Query 5: Bike availability trend (last 30 min) ──────
+TransformedData
+| where Timestamp > ago(30m)
+| summarize AvgBikes = avg(No_Bikes) by bin(Timestamp, 1m)
+| render timechart
+
+// ── Query 6: Top 10 busiest stations ─────────────────────
+AggregatedData
+| top 10 by No_Bikes desc
+| project BikepointID, No_Bikes
+
+// ── Query 7: T-SQL example ───────────────────────────────
+// SELECT top(10) * FROM AggregatedData ORDER BY No_Bikes DESC
+
+// ── Query 8: Map data (for dashboard) ────────────────────
+RawData
+| where Timestamp > ago(1h)
