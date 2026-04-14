@@ -61,8 +61,12 @@ This solution demonstrates the full Real-Time Intelligence stack: **Eventhouse**
 |------|--------|
 | **Workspace:** Real-Time Intelligence Tutorial | ✅ Created |
 | **Eventhouse:** Tutorial (+ KQL Database) | ✅ Created |
-| **KQL Schema:** RawData → TransformedData → AggregatedData | ✅ Created |
-| **Eventstream:** TutorialEventstream | ✅ Created (needs source config) |
+| **KQL Bronze:** RawData table (120 rows sample data) | ✅ Created + populated |
+| **KQL Silver:** TransformedData table (update policy active) | ✅ Created + auto-populated |
+| **KQL Gold:** AggregatedData materialized view | ✅ Created + auto-populated |
+| **KQL Function:** TransformRawData() | ✅ Created |
+| **Eventstream:** TutorialEventstream | ✅ Created (needs source config in portal) |
+| **Dashboard:** TutorialDashboard | ✅ Created (needs tile config in portal) |
 
 ### Steps to Complete in Fabric Portal
 
